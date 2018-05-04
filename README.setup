@@ -1,0 +1,94 @@
+# ledcontrol
+LED Daemon for S5
+
+# Setup Environment 
+## Ubuntu 17.10
+```bash
+sudo apt-get install build-essential git
+```
+
+## OSX
+```bash
+TBD
+```
+
+# Setup Source Tree
+```bash
+repo init -m ledcontrol.xml -u git@github.com:DensityCo/embed-ledcontrol.git -b trunk
+repo sync
+```
+
+# Build Project
+```bash
+mkdir build
+cd build
+cmake ..
+make
+```
+ 29 # Finite State Machine
+ 30 <img src="documentation/ledcontrol_statemachine.png" />
+ 31 
+ 32 ## LED States
+ 33 |State Name                           | State Description                                                                                    |
+ 34 |-------------------------------------|------------------------------------------------------------------------------------------------------|
+ 35 |STATE_INIT                           | Initialize to a known state                                                                          |
+ 36 |STATE_BOOTLOADER                     | Bootloader is active (if all goes well and the kernel boots this state may not be observable)        |
+ 37 |STATE_KERNEL                         | Kernel is active                                                                                     |
+ 38 |STATE_HEALTH_CHECK                   | Check the health of the entire system                                                                |
+ 39 |STATE_HEALTH_CHECK_OK                | Health check result is SUCCESS/OK                                                                    |
+ 40 |STATE_HEALTH_FAILED_SENSOR           | The sensor is unavailable or inoperable                                                              |
+ 41 |STATE_HEALTH_FAILED_NIC              | The LAN Network Interface is unavailable or inoperable                                               |
+ 42 |STATE_HEALTH_FAILED_NETWORK_LINK     | The LAN Network LINK is down                                                                         |
+ 43 |STATE_HEALTH_FAILED_NETWORK_INTERNET | The LAN LINK is up but a connection to the Internet is down, or DNS is failing          
+    |STATE_UNPROVISIONED                  | Device is waiting to be provisioned                                                                  |
+ 45 |STATE_PROVISIONING_ACTIVE            | Device local provisioning is complete & is attempting initial connection to density network          |
+ 46 |STATE_PROVISIONING_INITIAL           | Device is connected to the provisioning app                                                          |
+ 47 |STATE_OPERATIONAL                    | Device is operating normally                                                                         |
+ 48 |STATE_UPDATING                       | Software Update in progress                                                                          |
+ 49 |STATE_IDLE                           | Device is in Idle state, ready to transition to OPERATING, UPDATING,or UNPROVISIONED states          |
+ 50 |STATE_FACTORY_RESET                  | Reset pressed for > 10s, erasing all user data and provisioning data                                 |
+ 51 
+ 52 ## Implementation
+ 53 
+ 54 ### STATE_BOOTLOADER
+ 55 STATE_BOOTLOADER is not captured in the ledcontrol daemon as the state is only active before userspace is available. The U-BOOT Bootloader turns on the front-facing LED to a fixed color to signify that the power supply     has enabled the SoC and that the Bootloader is available and meets all security and integrity checks.
+ 56 
+ 57 ### STATE_KERNEL
+ 58 STATE_KERNEL is not captured in the ledcontrol daemon as the state is a prerequisite for the ledcontrol daemon.
+ 59 
+ 60 ### STATE_INIT
+ 61 STATE_INIT is not captured in the ledcontrol daemon as the state is a prerequisite for the ledcontrol daemon.
+ 62 
+ 63 ### STATE_HEALTH_CHECK
+ 64 STATE_HEALTH_CHECK does not require an LED state change as the status of this state to the end user is not meaningful or useful for debugging by     customer support or engineering stakeholders.
+ 65 
+ 66 ### STATE_HEALTH_CHECK_OK
+ 67 STATE_HEALTH_CHECK_OK does not require an LED state change as the status of this state to the end user is not meaningful or useful for debugging     by customer support or engineering stakeholders.
+ 68 
+ 69 ### STATE_HEALTH_FAILED_NIC
+ 70 STATE_HEALTH_FAILED_NIC signifies that the LAN Network Interface on the DPU is failing or is unavailable. This is likely due to a hardware or op    erating system failure.
+ 71 
+ 72 ### STATE_PROVISIONING_ACTIVE
+ 73 STATE_PROVISIONING_ACTIVE is observable by the user, 1Hz blink in the same color as STATE_PROVISIONING_INITIAL
+ 74 
+ 75 ### STATE_PROVISIONING_INITIAL
+ 76 STATE_PROVISIONING_INITIAL solid color when connected to the provisioning app.
+ 77 
+ 78 ### STATE_IDLE
+ 79 STATE_IDLE signifies that the device is in idle state and may transition to a number of running states. Likely we will have the device transitio    n to STATE_IDLE anytime it transitions between the named running states. This allows a scheduler to determine priority of requests and simplifie    s state machine logic by eliminating transitions directly between running states and will improve testability.
+ 80 
+ 81 ### STATE_UNPROVISIONED
+ 82 STATE_UNPROVISIONED signifies that the device is waiting in idle to be provisioned. All health checks passed. If provisioning is coupled with ne    twork link, or Internet availability then we may need to decouple this state from the health check.
+ 83 
+ 84 ### STATE_OPERATIONAL
+ 85 STATE_OPERATIONAL signifies that the device is actively counting people, all systems go!
+ 86 
+ 87 ### STATE_UPDATING
+ 88 STATE_UPDATING signifies that a new version of software has been successfully downloaded, verified, and is actively being written to the non-act    ive OS slot. Once the update is complete, the device will reboot.
+ 89 
+ 90 ### STATE_FACTORY_RESET
+ 91 STATE_FACTORY_RESET signifies that the device is actively erasing all provisioning and user data in order to revert the device to a "factory fre    sh" state. Once the factory reset is complete the device will reboot and if all health checks pass the device will land in STATE_UNPROVISIONED.
+ 92 
+ 93 ### STATE_WIFI_BLE_UNPLUGGED IN-149
+ 94 TATE_WIFI_BLE_UNPLUGGED signifies that there is no doggle plugged in and there needs to be a LED color change and/or blink to signal this state
+ 
