@@ -1,0 +1,21 @@
+1. Question is centered around led service's ability to capture messages in its callback to make sure it sets the led state correctly and subsequent color
+
+2. So if led service starts after other modules and other modules have already, for example, published a message stating that the dongle is unplugged,
+
+If callback is not triggered from messages pushed onto bus before led service is booted, then no color change to indicate as such because do not have any message to unpack and set state/color.
+
+Actually, regarding my #1.  Probably not really possible for modules to push messages based on led service's subscribed topic before led service up and running.  Led Service would need to subscribe its topic and therefore it is already 'alive'.  However, if something occurs that modules need Led Service's attention (e.g. dongle unplugged, network link failed, etc.) and led hasn't already subscribed, perhaps modules will need to 'hold' these messages and once they get a flag notifying them Led is alive, they can then release these holds
+
+So the server, in this case the modules that push messages to bus for LED, opens a socket (same port that client will use except if server one direction and if client, another direction.  After opening the socket, reads any requests on this socket.  After reading any requests (say the topic from LED Service), modules will then publish a message based on this topic.  Actually, when Led Service registers its topic, it is acting as a server.  Maybe when it registers its topic, it can requests any f
+
+Question****
+The modules (acting as servers) already have a topic that they can map to the published message, correct?  Not waiting for the led service to register its topic.  So if that's the case, do the modules (e.g. healthd, provisiond) and led service always use the same port?  Therefore, if can publish a message before registering a topi
+
+The callback messages will look more similar to the following:
+{"topic": "healthd.test", "name": "dongle_available", "result": false}
+If you see a func definition as such func_name(args) const, what is the intent of the const at the end?
+
+shane [12:12 PM]
+I'm assuming it's a class method
+that means if you call the method, the state of the object will not change
+so it is safe to call that function even if the object is declared const
