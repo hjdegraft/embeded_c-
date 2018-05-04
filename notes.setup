@@ -1,0 +1,69 @@
+git fetch && git merge DEN-4399
+`git checkout trunk; git pull; git checkout -b branchname` your new branch will be up to date.
+
+right so make sure all your changes are committed
+then you are going to `git checkout trunk`
+then `git pull` to pull in the latest from Github's trunk`
+then got back to your branch `git checkout <your branch name>` (edited)
+and finally `git merge trunk` to merge the latest from trunk into your branch
+
+Need to be in the buildroot dir when `git checkout trunk` and then `git pull` and need to be on the trunk branch when compiling in order to get latest.
+
+Need to make sure that the CMakeLists.txt file has the util with the Source files.  Looking for the file that
+contains the main().
+
+Because I have the EMBED_LEDCONTROL_OVERRIDE_SRCDIR=/home/diane/Density/sandbox/embed-ledcontrol in the output/local.mk file set, have to make sure all the files listed in that dir have the correct information (such CMakeLists.txt, etc).
+
+And now, when I make changes in the sandbox and compile from output, I don't have to copy files from sandbox over
+to output, automatically pulls from sandbox.
+
+To manually set the led files => echo VALUE > /sys/... but first have to `systemctl stop embed-ledcontrol`
+
+To install the UUID/UV packages in order to link the densityd lib,
+`sudo apt install uuid-dev`
+`sudo apt install rapidjson-dev`
+sudo apt install libuv1-dev
+
+If need to search for the correct app name, use:
+apt-cache search libuv
+
+=====
+For creating a development branch.  Before creating such, can stash my current state of files under my existing branch and then perform the following command after first creating the branch (e.g. `git checkout -b <branchname>).  The following command allows this branch to now become apart of embed-ledcontrol repo, for example:
+
+git push -u origin localbrachname:remotebranchname
+
+it branch -a
+ IN-107-LEDServcieModule
+* development_densitydIntegration
+ trunk
+ remotes/origin/HEAD -> origin/trunk
+ remotes/origin/IN-107-LEDServcieModule
+ remotes/origin/trunk
+
+"git remote -v" and "pwd"
+
+Diane deGraft Johnson [9:43 AM]
+origin    git@github.com:DensityCo/embed-ledcontrol (fetch)
+origin    git@github.com:DensityCo/embed-ledcontrol (push)
+
+So actually had to:
+git push origin HEAD:development
+
+After you `git add` and `git commit`, have to `git push` in order for your changes to show on the repo
+
+If after you created a new branch, you realize that you forgot to include a file, you can checkout to the branch that contains that file and copy it to /tmp and switch back to development branch and copy the file from /tmp
+
+In order to just rebuild your module (e.g. `make embed-ledcontrol-rebuild`), have to be in the output dir and then look in the output-s5_1g-customer/target/usr/bin for the latest binary to scp over to unit
+
+After which, need to scp the binary in the bin ^^ dir into the /usr/bin/ dir on the device
+
+Then you can also use `systemctl start embed-ledcontrol` to start after you've copied to the correct location on the device
+If you use `systemctl start embed-ledcontrol` all output directed to journald and you have to journalctl -u embed-ledcontrol
+
+To clear the journal after each run -> journalctl --vacuum-time=1seconds
+
+If you delete a file, in order for it to populate to the remote repo, do you actually `git add` for a deleted file??
+
+casey [3:37 PM]
+git add -A
+that'll pick up already deleted files
