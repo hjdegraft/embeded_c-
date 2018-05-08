@@ -44,7 +44,8 @@ layout in confluence.
     o serialize - Sets the various messages and then packs them along with the result from the application check.  If test
     passed, then led service needs to unpack these messages from the callback().  
     Currently have an iterator to emulate a loop of events that occur to validate that led service implementation correctly
-    sets the state and subsequent color.
+    sets the state and subsequent color.  This is commented out for github commit.  Another suggestion to this function
+might be to include the topic in the parms.  This will allow to set the ledState based on the type of message.
     
     o led_define_indicator_status - will verify type of message via the topic and based upon this string, will check
     corresponding messages that get published.  Currently, only checking led_service.control type of messages.  Based on
