@@ -1,0 +1,38 @@
+#How to Compile your local code
+  
+This information applies if you are developing a module and created a branch from an existing dir in the trunk repo.  
+For example, in the trunk branch, there existed an **embed-ledcontrol** dir.  For the LED Service Module, created a 
+branch (e.g. IN-107-LedServiceModule) within that directory.  Defined and implemented my header, source, and util/test 
+files in that branch and are now ready to compile and create a target on my local host.
+  
+After you have pointed your local repository to the most up-to-date trunk and your local work has not been integrated 
+into that build, when you perform a `make <your project>` from the *output-s5_1g-customer* dirrectory, you will notice 
+that it is compiling from existing files already integrated into trunk. First needto create a *local.mk*.  In this file 
+will need to override the project from which you branched off, update the *SUBDIR* var and any other data so that the 
+compile will only look at your local host.
+  `$ vim local.mk
+  $ EMBED_LEDCONTROL_OVERRIDE_SRCDIR=/home/diane/Density/proj-installation/emb.buildroot/output-s5_1g-customer/embed-
+  ledcontrol`
+ 
+In the **emb.buildroot/external/configs/s5_1g_defconfig** file, will need to modify the following variable as such:
+  `$ vim s5_1g_defconfig
+  $ EMBED_LEDCONTROL_SUBDIR=src <= previously pointing to another folder named application`
+  
+The **EMBED_LEDCONTROL_SUBDIR** variable also needs to be changed in the *emb.buildroot/external/package/embed-
+ledcontrol/embed-ledcontrol.mk* file.
+  **Change from **
+    `$ BR2_PACKAGE_EMBED_LEDCONTROL_VERSION=0.1.3` 
+  ** To **
+    `$ BR2_PACKAGE_EMBED_LEDCONTROL_VERSION=IN-107-LEDServcieModule`
+    
+    This way any time you push changes up to your project branch, then you can re-build buildroot and it will pull
+    in your changes.  Best practice is beforer building you want to remove the build directory in buildroot for 
+    ledcontrol to make sure that it pulls in your chnages (e.g. `rm -rf output-s5_1g-customer/build/embed-
+    ledcontrol-0.1.3/)`
+    
+    Then head back to the **emb.buildroot** and `make s5_1g-customer`
+    
+    ======= Later on Cross-compile =====
+    Example of what it means.  I pulled latest emb.buildroot (trunk) and compiled, but had not modified above local.mk
+    files to direct to my local workspace.  After those changes, the build captured my local files and built a target
+    on my host for me to use for debug.
